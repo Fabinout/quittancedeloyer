@@ -3,18 +3,39 @@ package com.quittancedeloyer.services;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 
+@Service
 public class MustacheService {
 
-
-    protected Template getTemplate() throws FileNotFoundException {
+    public Template getTemplate() throws FileNotFoundException {
         return Mustache.compiler()
-                .defaultValue("-")
-                .withLoader(name -> new FileReader(new ClassPathResource("re/arrg/partials/" + name + ".mustache").getPath()))
-                .compile(new FileReader(new ClassPathResource("").getPath()));
+                .withLoader(this::getFileReader)
+                .compile(getTemplateFileReader());
     }
 
+    FileReader getTemplateFileReader() {
+        Resource resource = new ClassPathResource("templates/quittance.mustache");
+        try {
+            return new FileReader(resource.getFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e);
+        }
+    }
+
+    FileReader getFileReader(String name) {
+        Resource resource = new ClassPathResource("templates/partial/" + name + ".mustache");
+        try {
+            return new FileReader(resource.getFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e);
+        }
+    }
 }
